@@ -1,6 +1,7 @@
 import os
 import threading
 import json
+import time
 from simple_layer import *
 
 
@@ -14,11 +15,9 @@ class myThread(threading.Thread):
     def run(self):
         runProgram(self.threadID, self.iteration)
 
-
 # runs in thread
 def runProgram(threadID, iteration):
-    os.system("python mnist.py " + str(threadID) + " " + str(iteration))
-
+    os.system("python GradientPolymerization.py " + str(threadID) + " " + str(iteration))
 
 def load_json(name):
     with open(name, "r") as load_json:
@@ -103,14 +102,17 @@ def save_model(name, parameter):
 if __name__ == '__main__':
 
     # num of batch is 600, need 10 times to finish all img
+    mainThreadTime = 0
+    startTime = time.time()
     for iteration in range(10):
-
         threads = []
         # run program by multithreading method
         for ID in range(10):
             thread = myThread(ID, iteration)
-            thread.start()
             threads.append(thread)
+
+        for thread in threads:
+            thread.start()
 
         # main thread waits until all subThread finished
         for t in threads:
@@ -126,5 +128,9 @@ if __name__ == '__main__':
 
         aveGrad = getAveGrad(grads)
         resModel = getResModel(primModel, aveGrad)
-        resPath = "./polymerizeModel/resModel" + str(iteration + 1) + ".json"
-        save_model(resPath, resModel)
+
+        # resPath = "./polymerizeModel/resModel" + str(iteration + 1) + ".json"
+        # save_model(resPath, resModel)
+    endTime = time.time()
+    mainThreadTime = endTime - startTime
+    print("main time:{}".format(mainThreadTime))
